@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Board } from './components/board/board';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [Board],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
-  protected title = 'AI-Tic-Tac-Toe';
 }
