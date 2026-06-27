@@ -7,7 +7,6 @@ export class Minimax {
 
   readonly WIN = 1000;
   readonly LOSS = -1000;
-  readonly DRAW = 0;
 
   readonly AI = 'O';
   readonly PLAYER = 'X';
@@ -26,10 +25,6 @@ export class Minimax {
     [[2,0],[1,1],[0,2]]
   ];
 
-  // ---------------------------
-  // Helpers
-  // ---------------------------
-
   getLegalMoves(board: string[][]): number[][] {
     const moves: number[][] = [];
 
@@ -40,7 +35,6 @@ export class Minimax {
         }
       }
     }
-
     return moves;
   }
 
@@ -49,31 +43,18 @@ export class Minimax {
   }
 
   gameWon(board: string[][], marker: string): boolean {
-
-    for (const line of this.winningStates) {
-      if (
-        board[line[0][0]][line[0][1]] === marker &&
-        board[line[1][0]][line[1][1]] === marker &&
-        board[line[2][0]][line[2][1]] === marker
-      ) {
-        return true;
-      }
-    }
-
-    return false;
+    return this.winningStates.some(line =>
+      board[line[0][0]][line[0][1]] === marker &&
+      board[line[1][0]][line[1][1]] === marker &&
+      board[line[2][0]][line[2][1]] === marker
+    );
   }
 
   evaluate(board: string[][]): number {
-
     if (this.gameWon(board, this.AI)) return this.WIN;
     if (this.gameWon(board, this.PLAYER)) return this.LOSS;
-
     return 0;
   }
-
-  // ---------------------------
-  // PURE MINIMAX (NO MUTATION)
-  // ---------------------------
 
   minimax(
     board: string[][],
@@ -91,66 +72,51 @@ export class Minimax {
     if (this.boardIsFull(board)) return 0;
 
     if (isMax) {
-
       let best = -Infinity;
 
       for (const [i, j] of this.getLegalMoves(board)) {
-
         const newBoard = board.map(r => [...r]);
         newBoard[i][j] = this.AI;
 
-        const value = this.minimax(newBoard, depth + 1, false, alpha, beta);
+        best = Math.max(
+          best,
+          this.minimax(newBoard, depth + 1, false, alpha, beta)
+        );
 
-        best = Math.max(best, value);
         alpha = Math.max(alpha, best);
-
-        if (beta <= alpha) break;
-      }
-
-      return best;
-
-    } else {
-
-      let best = Infinity;
-
-      for (const [i, j] of this.getLegalMoves(board)) {
-
-        const newBoard = board.map(r => [...r]);
-        newBoard[i][j] = this.PLAYER;
-
-        const value = this.minimax(newBoard, depth + 1, true, alpha, beta);
-
-        best = Math.min(best, value);
-        beta = Math.min(beta, best);
-
         if (beta <= alpha) break;
       }
 
       return best;
     }
+
+    let best = Infinity;
+
+    for (const [i, j] of this.getLegalMoves(board)) {
+      const newBoard = board.map(r => [...r]);
+      newBoard[i][j] = this.PLAYER;
+
+      best = Math.min(
+        best,
+        this.minimax(newBoard, depth + 1, true, alpha, beta)
+      );
+
+      beta = Math.min(beta, best);
+      if (beta <= alpha) break;
+    }
+
+    return best;
   }
 
-  // ---------------------------
-  // BEST MOVE (SAFE)
-  // ---------------------------
-
   bestMove(board: string[][]): number[] {
-
     let bestScore = -Infinity;
     let move: number[] = [-1, -1];
 
     for (const [i, j] of this.getLegalMoves(board)) {
-
       const newBoard = board.map(r => [...r]);
       newBoard[i][j] = this.AI;
 
-      const score = this.minimax(
-        newBoard,
-        0,
-        false,
-        -Infinity,
-        Infinity
-      );
+      const score = this.minimax(newBoard, 0, false, -Infinity, Infinity);
 
       if (score > bestScore) {
         bestScore = score;

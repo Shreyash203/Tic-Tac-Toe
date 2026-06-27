@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Minimax } from '../../services/minimax';
+
 @Component({
   selector: 'app-board',
   standalone: true,
@@ -9,50 +10,60 @@ import { Minimax } from '../../services/minimax';
   styleUrl: './board.scss'
 })
 export class Board {
+
   constructor(private minimax: Minimax) {}
+
   board: string[][] = [
     ['', '', ''],
     ['', '', ''],
     ['', '', '']
   ];
 
+  play(row: number, col: number) {
 
- play(row: number, col: number) {
+    // ignore invalid move
+    if (this.board[row][col] !== '') return;
 
-  if (this.board[row][col] !== '') return;
+    // PLAYER MOVE
+    this.board[row][col] = 'X';
+    this.board = this.board.map(r => [...r]);
 
-  // Player
-  this.board[row][col] = 'X';
-this.board = [...this.board.map(r => [...r])];
+    if (this.minimax.gameWon(this.board, 'X')) {
+      alert('🎉 You Win!');
+      this.restart();
+      return;
+    }
 
-  if (this.minimax.gameWon(this.board, 'X')) {
-    alert('🎉 You Win!');
-    this.restart();
-    return;
-  }
+    if (this.minimax.boardIsFull(this.board)) {
+      alert('Draw!');
+      this.restart();
+      return;
+    }
 
-  if (this.minimax.boardIsFull(this.board)) {
-    alert('Draw!');
-    this.restart();
-    return;
-  }
-
-  setTimeout(() => {
-
+    // AI MOVE
     const [r, c] = this.minimax.bestMove(this.board);
 
     if (r !== -1) {
       this.board[r][c] = 'O';
-this.board = [...this.board.map(r => [...r])];
+      this.board = this.board.map(r => [...r]);
     }
 
-    if (this.minimax.gameWon(this.board, 'O')) {
-      alert('🤖 AI Wins!');
-      this.restart();
-    }
+    // IMPORTANT: delay checks so UI can render AI move
+    setTimeout(() => {
 
-  }, 300);
-}
+      if (this.minimax.gameWon(this.board, 'O')) {
+        alert('🤖 AI Wins!');
+        this.restart();
+        return;
+      }
+
+      if (this.minimax.boardIsFull(this.board)) {
+        alert('Draw!');
+        this.restart();
+      }
+
+    }, 50);
+  }
 
   restart() {
     this.board = [
